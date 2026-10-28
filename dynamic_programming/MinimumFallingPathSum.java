@@ -11,7 +11,8 @@
     - Down-Right (r+1, c+1)
 
     DP meaning:
-    dp[r][c] =  minimum path sum to reach cell (r, c) from the first row.
+    matrix[r][c] = minimum path sum to reach cell (r, c)
+                   from any cell in the first row.
 
     Idea:
     To reach (r, c), the previous cell can only be:
@@ -19,58 +20,74 @@
     - (r-1, c-1)
     - (r-1, c+1)
 
-    Take the minimum of these valid parents and
-    add the current cell value.
-
-    Initialization:
-    First row:
-    dp[0][c] = matrix[0][c]
+    We find the minimum valid parent and add it
+    directly to matrix[r][c].
 
     Transition:
-    dp[r][c] =  matrix[r][c] +
-                min(
-                    dp[r-1][c],
-                    dp[r-1][c-1],
-                    dp[r-1][c+1]
-                )
+
+    matrix[r][c] += min(
+        matrix[r-1][c],
+        matrix[r-1][c-1],
+        matrix[r-1][c+1]
+    );
+
+    Since we modify the input matrix directly,
+    we don't need a separate DP array.
 
     Answer:
-    Minimum value in the last row of dp.
+    Minimum value in the last row.
 
-    Time: O(m * n)
-    Space: O(m * n)
+    Time:  O(n²)
+    Space: O(1) extra space
+
+    Note:
+    This approach modifies the original matrix.
 */
 
 public class MinimumFallingPathSum {
 
     public static int minFallingPathSum(int[][] matrix) {
-        int m = matrix.length, n = matrix[0].length;
-        int[][] dp = new int[m][n];
 
-        System.arraycopy(matrix[0], 0, dp[0], 0, n);
+        int n = matrix.length;
 
-        for (int r = 1; r < m; r++) {
-            for (int c = 0; c < n; c++) {
+        // Build the minimum path sum for every cell
+        for (int row = 1; row < n; row++) {
 
-                int minParent = dp[r - 1][c];
+            for (int col = 0; col < n; col++) {
 
-                if (c != 0)
-                    minParent = Math.min(minParent, dp[r - 1][c - 1]);
+                // Start with the cell directly above
+                int parent = matrix[row - 1][col];
 
-                if (c != n - 1)
-                    minParent = Math.min(minParent, dp[r - 1][c + 1]);
+                // Check upper-left
+                if (col > 0) {
+                    parent = Math.min(
+                        parent,
+                        matrix[row - 1][col - 1]
+                    );
+                }
 
-                dp[r][c] = minParent + matrix[r][c];
+                // Check upper-right
+                if (col < n - 1) {
+                    parent = Math.min(
+                        parent,
+                        matrix[row - 1][col + 1]
+                    );
+                }
+
+                // Add the minimum parent path
+                // to the current cell
+                matrix[row][col] += parent;
             }
         }
 
-        int res = dp[m - 1][0];
+        // Find the minimum path sum in the last row
+        int result = matrix[n - 1][0];
 
-        for (int i = 1; i < n; i++) {
-            res = Math.min(res, dp[m - 1][i]);
+        for (int col = 1; col < n; col++) {
+            result = Math.min(result, matrix[n - 1][col]);
         }
 
-        return res;
+        return result;
     }
 
     public static void main(String[] args) {
@@ -82,7 +99,10 @@ public class MinimumFallingPathSum {
         };
 
         System.out.println(
-            "Minimum Falling Path Sum: " + minFallingPathSum(matrix)
-        ); // Output: 13
+            "Minimum Falling Path Sum: "
+            + minFallingPathSum(matrix)
+        );
+
+        // Output: 13
     }
 }
